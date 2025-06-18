@@ -1,0 +1,27 @@
+{% extends 'blog/base.html' %}
+{% block content %}
+
+<div class="container">
+  <h2>Profile: {{ profile_user.username }}</h2>
+  <p>Email: {{ profile_user.email }}</p>
+  {% if profile_user.is_superuser %}
+    <p>Role: Admin</p>
+  {% else %}
+    <p>Role: Regular User</p>
+  {% endif %}
+
+  <hr>
+  <h4>Posts by {{ profile_user.username }}</h4>
+  <ul class="list-group">
+    {% for post in posts %}
+      <li class="list-group-item">
+        <a href="{% url 'post_detail' post.id %}">{{ post.title }}</a>
+        <br><small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+      </li>
+    {% empty %}
+      <li class="list-group-item">No posts yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% endblock %}

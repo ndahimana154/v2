@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from .models import Comment
 from .forms import CommentForm
+from django.contrib.auth.models import User
 
 
 def register_view(request):
@@ -38,14 +39,25 @@ def logout_view(request):
 
 
 
+from .models import Category
+
 def home(request):
     query = request.GET.get('q')
-    if query:
-        posts = Post.objects.filter(title__icontains=query).order_by('-created_at')
-    else:
-        posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'blog/home.html', {'posts': posts, 'query': query})
+    category_id = request.GET.get('category')
+    posts = Post.objects.all().order_by('-created_at')
+    categories = Category.objects.all()
 
+    if query:
+        posts = posts.filter(title__icontains=query)
+    if category_id:
+        posts = posts.filter(category__id=category_id)
+
+    return render(request, 'blog/home.html', {
+        'posts': posts,
+        'query': query,
+        'categories': categories,
+        'selected_category': int(category_id) if category_id else None,
+    })
 
 @login_required
 def post_create(request):
@@ -118,3 +130,52 @@ def post_detail(request, post_id):
         'comments': comments,
         'form': form
     })
+
+
+def profile_view(request, username):
+    user_profile = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author=user_profile).order_by('-created_at')
+    
+    return render(request, 'blog/profile.html', {
+        'profile_user': user_profile,
+        'posts': posts
+    })
+
+from .models import Category
+from .forms import CategoryForm
+
+@login_required
+def category_list(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    categories = Category.objects.all()
+    return render(request, 'blog/category_list.html', {'categories': categories})
+
+
+@login_required
+def category_add(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = CategoryForm()
+    return render(request, 'blog/category_form.html', {'form': form, 'title': 'Add Category'})
+
+
+@login_required
+def category_edit(request, category_id):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    category = get_object_or_404(Category, pk=category_id)
+    if request.method == 'POST':
+        form = CategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = CategoryForm(instance=category)
+    return render(request, 'blog/category_form.html', {'form': form, 'title': 'Edit Category'})

@@ -12,4 +12,13 @@ urlpatterns = [
     path('post/<int:post_id>/', views.post_detail, name='post_detail'),
     path('post/<int:post_id>/edit/', views.post_edit, name='post_edit'),
     path('post/<int:post_id>/delete/', views.post_delete, name='post_delete'),
+
+    path('profile/<str:username>/', views.profile_view, name='profile'),
+
+    # Category Views
+path('categories/', views.category_list, name='category_list'),
+path('categories/add/', views.category_add, name='category_add'),
+path('categories/<int:category_id>/edit/', views.category_edit, name='category_edit'),
+
+
 ]

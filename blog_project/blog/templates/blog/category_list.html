@@ -1,0 +1,15 @@
+{% extends "blog/base.html" %}
+{% block content %}
+  <h2>Categories</h2>
+  <a href="{% url 'category_add' %}" class="btn btn-sm btn-primary mb-3">Add New Category</a>
+  <ul class="list-group">
+    {% for category in categories %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ category.name }}
+        <a href="{% url 'category_edit' category.id %}" class="btn btn-sm btn-secondary">Edit</a>
+      </li>
+    {% empty %}
+      <li class="list-group-item">No categories yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
